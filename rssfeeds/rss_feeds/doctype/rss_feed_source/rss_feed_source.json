@@ -1,0 +1,119 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:feed_name",
+ "creation": "2026-04-28 22:53:19.764653",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "feed_name",
+  "feed_url",
+  "column_break_1",
+  "status",
+  "last_snapshot_hash",
+  "last_fetched_on",
+  "keyword_section",
+  "allowed_keywords",
+  "column_break_rcft",
+  "blocked_keywords"
+ ],
+ "fields": [
+  {
+   "fieldname": "feed_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Feed Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "feed_url",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Feed URL",
+   "options": "URL",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nInactive"
+  },
+  {
+   "fieldname": "last_snapshot_hash",
+   "fieldtype": "Data",
+   "label": "Last Snapshot Hash",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_fetched_on",
+   "fieldtype": "Datetime",
+   "label": "Last Fetched On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "keyword_section",
+   "fieldtype": "Section Break",
+   "label": "Alert Intelligence Filter"
+  },
+  {
+   "description": "Comma-separated. If filled, an alert will ONLY fire if one of these words is found.",
+   "fieldname": "allowed_keywords",
+   "fieldtype": "Small Text",
+   "label": "Allowed Keywords (Trigger)"
+  },
+  {
+   "description": "Comma-separated. If any of these words are found, the alert is CANCELLED immediately.",
+   "fieldname": "blocked_keywords",
+   "fieldtype": "Small Text",
+   "label": "Blocked Keywords (Halt)"
+  },
+  {
+   "fieldname": "column_break_rcft",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-04-29 23:42:12.207121",
+ "modified_by": "Administrator",
+ "module": "RSS Feeds",
+ "name": "RSS Feed Source",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "RSS Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "RSS User",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,65 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-04-28 22:47:45.448375",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "app_settings_section",
+  "enable_ai_pipeline",
+  "column_break_egzh",
+  "max_retries"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "description": "Master switch to enable or pause background AI summarization.",
+   "fieldname": "enable_ai_pipeline",
+   "fieldtype": "Check",
+   "label": "Enable AI Pipeline"
+  },
+  {
+   "default": "3",
+   "description": "Number of times to retry a failed AI summarization before skipping.",
+   "fieldname": "max_retries",
+   "fieldtype": "Int",
+   "label": "Max Retries"
+  },
+  {
+   "fieldname": "column_break_egzh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "app_settings_section",
+   "fieldtype": "Section Break",
+   "label": "App Settings"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-04-28 23:13:49.399270",
+ "modified_by": "gondala.prasad@zerodha.com",
+ "module": "RSS Feeds",
+ "name": "RSS App Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

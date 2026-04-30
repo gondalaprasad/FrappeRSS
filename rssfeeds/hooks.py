@@ -164,7 +164,21 @@ app_license = "mit"
 # 	"monthly": [
 # 		"rssfeeds.tasks.monthly"
 # 	],
+#   "all": [
+#       "rssfeeds.tasks.fetch_all_active_feeds"
+#   ]
 # }
+
+# Scheduled Tasks
+# ---------------
+
+scheduler_events = {
+    "all": [
+        "rssfeeds.tasks.fetch_all_active_feeds",
+        "rssfeeds.tasks.sweep_stuck_articles",
+        "rssfeeds.tasks.process_action_alerts"   # <-- ADD THIS LINE
+    ]
+}
 
 # Testing
 # -------

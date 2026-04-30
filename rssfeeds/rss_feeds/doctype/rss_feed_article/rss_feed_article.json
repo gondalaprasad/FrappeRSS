@@ -1,0 +1,132 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "RSS-ART-.#####",
+ "creation": "2026-04-28 22:55:58.609001",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "source",
+  "column_break_meta",
+  "published_date",
+  "article_url",
+  "section_break_content",
+  "file_attachment",
+  "raw_content",
+  "pdf_viewer",
+  "section_break_ai",
+  "ai_processing_status",
+  "ai_summary"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Source",
+   "options": "RSS Feed Source"
+  },
+  {
+   "fieldname": "column_break_meta",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "published_date",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Published Date"
+  },
+  {
+   "fieldname": "article_url",
+   "fieldtype": "Small Text",
+   "label": "Article URL",
+   "options": "URL"
+  },
+  {
+   "fieldname": "section_break_content",
+   "fieldtype": "Section Break",
+   "label": "Article Content"
+  },
+  {
+   "fieldname": "file_attachment",
+   "fieldtype": "Attach",
+   "label": "File Attachment",
+   "read_only": 1
+  },
+  {
+   "fieldname": "raw_content",
+   "fieldtype": "Text Editor",
+   "label": "Raw Content",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ai",
+   "fieldtype": "Section Break",
+   "label": "AI Processing & Summary"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "ai_processing_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "AI Processing Status",
+   "options": "Pending\nExtracting\nSummarizing\nCompleted\nFailed\nSkipped\nCheck Manually"
+  },
+  {
+   "fieldname": "ai_summary",
+   "fieldtype": "Markdown Editor",
+   "label": "AI Summary",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pdf_viewer",
+   "fieldtype": "HTML",
+   "label": "Document Viewer"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-04-30 08:24:15.690309",
+ "modified_by": "Administrator",
+ "module": "RSS Feeds",
+ "name": "RSS Feed Article",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "RSS Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "RSS User",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
