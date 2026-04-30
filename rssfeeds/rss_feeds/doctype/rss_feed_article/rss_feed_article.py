@@ -34,7 +34,22 @@ class RSSFeedArticle(Document):
             if frappe.request:
                 frappe.msgprint("AI Pipeline is currently disabled in settings.")
             return
-        
+
+        # ==========================================
+        # --- THE TRIPLE LOCK: SOURCE STATUS CHECK ---
+        # ==========================================
+        if self.source:
+            # Real-time check if the source was set to 'Inactive' while this article was in the queue
+            source_status = frappe.db.get_value("RSS Feed Source", self.source, "status")
+            
+            # If it is anything other than 'Active', we kill the job immediately
+            if source_status != "Active":
+                # Update the status so the user knows why it stopped, and gracefully abort
+                self.db_set("ai_processing_status", "Skipped (Source Inactive)")
+                frappe.db.commit()
+                return
+        # ==========================================
+
         # --- HELPER FUNCTION: Only reads PDFs and Images ---
         def extract_text_from_path(file_path):
             text = ""

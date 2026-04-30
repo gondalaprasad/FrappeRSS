@@ -18,8 +18,8 @@
   "raw_content",
   "pdf_viewer",
   "section_break_ai",
-  "ai_processing_status",
-  "ai_summary"
+  "ai_summary",
+  "ai_processing_status"
  ],
  "fields": [
   {
@@ -105,7 +105,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-30 12:27:25.763476",
+ "modified": "2026-04-30 14:28:49.510077",
  "modified_by": "Administrator",
  "module": "RSS Feeds",
  "name": "RSS Feed Article",
