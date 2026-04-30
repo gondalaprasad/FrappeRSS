@@ -217,7 +217,11 @@ class RSSFeedArticle(Document):
             # ==========================================
 
             # Generate the internal Frappe Desk link for the article
+            # Generate the internal Frappe Desk link for the article
             frappe_article_url = get_url_to_form("RSS Feed Article", self.name)
+            
+            # Get the original external URL
+            original_link = self.article_url or "https://#"
             
             # Strip the HTML tags out of the summary so it looks clean in Google Chat
             clean_summary = strip_html(self.ai_summary or "")
@@ -225,7 +229,9 @@ class RSSFeedArticle(Document):
             message_text = f"🚨 *PRIORITY ALERT: {self.title}*\n\n"
             message_text += f"*Source:* {source_doc.feed_name}\n\n"
             message_text += f"*AI Summary:*\n{clean_summary}\n\n"
-            message_text += f"🔗 <{frappe_article_url}|View Original PDF & AI Summary in Frappe>"
+            
+            # 🔗 Format: <URL|Display Text>
+            message_text += f"🔗 <{original_link}|Attachment> | <{frappe_article_url}|Frappe Article>"
 
             payload = {"text": message_text}
             headers = {"Content-Type": "application/json"}
