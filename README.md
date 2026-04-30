@@ -34,7 +34,6 @@
 | Feature | Description |
 |---|---|
 | 📥 **Automated RSS Fetching** | Background schedulers pull the latest circulars and news items at your preferred intervals. |
-| 🛡️ **Bot-Bypass PDF Processor** | Safely downloads massive regulatory PDFs (up to 100MB) bypassing standard government anti-scraping firewalls using custom user-agent headers. |
 | 🧠 **AI Executive Summarization** | Passes downloaded document text and OCR data through LiteLLM to generate instant, highly accurate executive summaries. |
 | 🚦 **Smart Webhook Gatekeeper** | Keyword-based Allow/Block lists prevent alert spam in Google Chat. Routine updates are logged silently; critical keywords trigger instant alarms. |
 | 📖 **Inline PDF Viewer** | A customized UI embedded directly within Frappe Docs to read circulars without ever leaving the system. |
