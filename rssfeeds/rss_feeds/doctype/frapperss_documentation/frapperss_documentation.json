@@ -16,8 +16,7 @@
   },
   {
    "fieldname": "documentation",
-   "fieldtype": "Markdown Editor",
-   "ignore_xss_filter": 1,
+   "fieldtype": "Text Editor",
    "label": "Documentation"
   }
  ],
@@ -26,7 +25,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-04-30 10:48:14.235259",
+ "modified": "2026-04-30 11:38:09.053013",
  "modified_by": "Administrator",
  "module": "RSS Feeds",
  "name": "FrappeRSS Documentation",

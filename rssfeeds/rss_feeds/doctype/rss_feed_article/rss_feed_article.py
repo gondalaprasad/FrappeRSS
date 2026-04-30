@@ -6,6 +6,7 @@ import tempfile
 import zipfile
 from frappe.utils.file_manager import save_file
 import pytesseract
+from frappe.utils import markdown, get_url_to_form, strip_html
 
 class RSSFeedArticle(Document):
     
@@ -53,7 +54,6 @@ class RSSFeedArticle(Document):
                 # 2. Image Handling (OCR)
                 elif ext.endswith((".png", ".jpg", ".jpeg")):
                     from PIL import Image
-                    # import pytesseract
                     text += pytesseract.image_to_string(Image.open(file_path)) + "\n"
             except Exception as e:
                 frappe.log_error(title=f"Extraction Error for {os.path.basename(file_path)}", message=str(e))
@@ -144,9 +144,14 @@ class RSSFeedArticle(Document):
                     api_base=profile.base_url or None
                 )
 
-                summary = response.choices[0].message.content
+                # Get the raw markdown summary from AI
+                raw_summary = response.choices[0].message.content
                 
-                self.db_set("ai_summary", summary)
+                # Convert Markdown to HTML for the Text Editor field
+                html_summary = markdown(raw_summary)
+                
+                # Save the HTML formatted summary
+                self.db_set("ai_summary", html_summary)
                 self.db_set("ai_processing_status", "Completed")
                 frappe.db.commit()
 
@@ -198,7 +203,6 @@ class RSSFeedArticle(Document):
             # 2. The Blocked Check (Absolute Override)
             for bw in blocked_kws:
                 if bw in search_text:
-                    # Silently abort the alert, but log it for debugging
                     frappe.log_error(title="Alert Halted: Blocked Keyword", message=f"Article: {self.name}\nBlocked Word Found: '{bw}'")
                     return 
 
@@ -206,18 +210,22 @@ class RSSFeedArticle(Document):
             if allowed_kws:
                 has_allowed = any(aw in search_text for aw in allowed_kws)
                 if not has_allowed:
-                    # Silently abort because it didn't match any allowed topics
                     return 
                     
             # ==========================================
             # --- END FILTER (PROCEED TO SEND) ---------
             # ==========================================
 
-            message_text = f"📰 *New Tech/News Summary Ready!*\n\n"
-            message_text += f"*Title:* {self.title}\n"
+            # Generate the internal Frappe Desk link for the article
+            frappe_article_url = get_url_to_form("RSS Feed Article", self.name)
+            
+            # Strip the HTML tags out of the summary so it looks clean in Google Chat
+            clean_summary = strip_html(self.ai_summary or "")
+
+            message_text = f"🚨 *PRIORITY ALERT: {self.title}*\n\n"
             message_text += f"*Source:* {source_doc.feed_name}\n\n"
-            message_text += f"*AI Summary:*\n{self.ai_summary}\n\n"
-            message_text += f"🔗 <{self.article_url}|Read Original Article>"
+            message_text += f"*AI Summary:*\n{clean_summary}\n\n"
+            message_text += f"🔗 <{frappe_article_url}|View Original PDF & AI Summary in Frappe>"
 
             payload = {"text": message_text}
             headers = {"Content-Type": "application/json"}

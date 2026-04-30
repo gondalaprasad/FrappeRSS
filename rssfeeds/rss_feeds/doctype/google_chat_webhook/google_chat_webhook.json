@@ -8,9 +8,9 @@
  "engine": "InnoDB",
  "field_order": [
   "webhook_name",
-  "column_break_rmkh",
   "webhook_url",
-  "is_active"
+  "is_active",
+  "column_break_rmkh"
  ],
  "fields": [
   {
@@ -42,7 +42,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-30 10:16:40.905844",
+ "modified": "2026-04-30 12:17:48.349184",
  "modified_by": "Administrator",
  "module": "RSS Feeds",
  "name": "Google Chat Webhook",

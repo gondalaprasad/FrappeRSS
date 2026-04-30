@@ -17,7 +17,36 @@ frappe.ui.form.on('RSS Feed Article', {
 
 
         // ==========================================
-        // 2. INLINE PDF VIEWER LOGIC
+        // 2. FAVORITES BUTTON LOGIC
+        // ==========================================
+        // Determine what the button should say based on current status
+        let fav_label = frm.doc.is_favorite ? '❌ Remove Favorite' : '⭐ Add to Favorites';
+        
+        frm.add_custom_button(fav_label, function() {
+            // Toggle the checkbox (If 1, make it 0. If 0, make it 1)
+            let new_status = frm.doc.is_favorite ? 0 : 1;
+            
+            // Set the hidden checkbox value and immediately save the document
+            frm.set_value('is_favorite', new_status);
+            frm.save('Save', () => {
+                // Show a nice popup alert when saved
+                frappe.show_alert({
+                    message: new_status ? '⭐ Added to Favorites!' : 'Removed from Favorites.',
+                    indicator: new_status ? 'green' : 'orange'
+                });
+            });
+        });
+        
+        // Make the button visually stand out with Frappe's native UI colors
+        if (frm.doc.is_favorite) {
+            frm.change_custom_button_type('❌ Remove Favorite', null, 'warning'); // Yellow/Orange
+        } else {
+            frm.change_custom_button_type('⭐ Add to Favorites', null, 'default'); // Standard grey
+        }
+
+
+        // ==========================================
+        // 3. INLINE PDF VIEWER LOGIC
         // ==========================================
         // Check if the PDF Viewer HTML field exists on the form
         if (frm.fields_dict.pdf_viewer) {

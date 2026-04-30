@@ -12,6 +12,7 @@
   "column_break_meta",
   "published_date",
   "article_url",
+  "is_favorite",
   "section_break_content",
   "file_attachment",
   "raw_content",
@@ -83,7 +84,7 @@
   },
   {
    "fieldname": "ai_summary",
-   "fieldtype": "Markdown Editor",
+   "fieldtype": "Text Editor",
    "label": "AI Summary",
    "read_only": 1
   },
@@ -91,12 +92,20 @@
    "fieldname": "pdf_viewer",
    "fieldtype": "HTML",
    "label": "Document Viewer"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_favorite",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "in_list_view": 1,
+   "label": "Is Favorite"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-30 10:14:59.755455",
+ "modified": "2026-04-30 12:27:25.763476",
  "modified_by": "Administrator",
  "module": "RSS Feeds",
  "name": "RSS Feed Article",
