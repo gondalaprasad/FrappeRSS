@@ -83,8 +83,8 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-28 23:30:29.075821",
- "modified_by": "gondala.prasad@zerodha.com",
+ "modified": "2026-04-30 10:15:49.409775",
+ "modified_by": "Administrator",
  "module": "RSS Feeds",
  "name": "AI Provider Profile",
  "owner": "Administrator",
@@ -106,5 +106,8 @@
  "rows_threshold_for_grid_search": 20,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
 }

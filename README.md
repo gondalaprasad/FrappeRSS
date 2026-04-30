@@ -9,6 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Frappe Framework](https://img.shields.io/badge/Frappe-v15+-blue.svg)](https://frappeframework.com/)
 [![Python](https://img.shields.io/badge/Python-3.10+-green.svg)](https://www.python.org/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-gondalaprasad-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/gondalaprasad/)
 
 </div>
 
@@ -110,5 +111,7 @@ git push origin main
 <div align="center">
 
 Built with ❤️ for the **Frappe Community**
+
+[![LinkedIn](https://img.shields.io/badge/Connect%20on%20LinkedIn-gondalaprasad-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/gondalaprasad/)
 
 </div>
