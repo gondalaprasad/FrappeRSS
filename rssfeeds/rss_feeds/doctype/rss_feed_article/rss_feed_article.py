@@ -28,27 +28,32 @@ class RSSFeedArticle(Document):
     def generate_ai_summary(self):
         """Attempts to summarize the raw content or attached files using the Fallback Chain."""
 
-        # --- THE DOUBLE LOCK: Check if pipeline was disabled after this was queued ---
+        # --- THE DOUBLE LOCK ---
         settings = frappe.get_single("RSS App Settings")
         if not settings.enable_ai_pipeline:
-            if frappe.request:
-                frappe.msgprint("AI Pipeline is currently disabled in settings.")
             return
+
+        # ==========================================
+        # --- THE UPDATED SHIELD (CRITICAL FIX) ---
+        # ==========================================
+        
+        # 1. KILL DUPLICATES: If it is already done OR currently being worked on, STOP.
+        if self.ai_processing_status in ["Completed", "Summarizing", "Skipped (Source Inactive)"]:
+            return
+
+        # 2. LOCK IT IMMEDIATELY: Set to Summarizing so no other worker touches this article.
+        self.db_set("ai_processing_status", "Summarizing")
+        frappe.db.commit()
 
         # ==========================================
         # --- THE TRIPLE LOCK: SOURCE STATUS CHECK ---
         # ==========================================
         if self.source:
-            # Real-time check if the source was set to 'Inactive' while this article was in the queue
             source_status = frappe.db.get_value("RSS Feed Source", self.source, "status")
-            
-            # If it is anything other than 'Active', we kill the job immediately
             if source_status != "Active":
-                # Update the status so the user knows why it stopped, and gracefully abort
                 self.db_set("ai_processing_status", "Skipped (Source Inactive)")
                 frappe.db.commit()
                 return
-        # ==========================================
 
         # --- HELPER FUNCTION: Only reads PDFs and Images ---
         def extract_text_from_path(file_path):
@@ -156,7 +161,8 @@ class RSSFeedArticle(Document):
                     model=model_string,
                     messages=[{"role": "user", "content": prompt}],
                     api_key=api_key,
-                    api_base=profile.base_url or None
+                    api_base=profile.base_url or None,
+                    timeout=45
                 )
 
                 # Get the raw markdown summary from AI

@@ -3,8 +3,32 @@ from frappe.model.document import Document
 import feedparser
 from frappe.utils import now
 import time
-import requests
+import cloudscraper
 from frappe.utils.file_manager import save_file
+
+def download_attachment_safely(file_url, max_retries=3):
+    """Safely downloads a file by mimicking a browser and bypassing Cloudflare."""
+    scraper = cloudscraper.create_scraper() # Initializes the Cloudflare bypasser
+    
+    for attempt in range(max_retries):
+        try:
+            # allow_redirects=True is crucial for financial sites that bounce links around
+            response = scraper.get(file_url, allow_redirects=True, timeout=30)
+            
+            # If successful, return the raw bytes
+            if response.status_code == 200:
+                return response.content
+                
+        except Exception as e:
+            if attempt == max_retries - 1:
+                # If we failed 3 times, log it and give up gracefully
+                frappe.log_error(title=f"File Download Failed: {file_url}", message=str(e))
+                return None
+            
+            # Wait 3 seconds before trying again to let the target server breathe
+            time.sleep(3)
+            
+    return None
 
 class RSSFeedSource(Document):
     
@@ -28,9 +52,19 @@ class RSSFeedSource(Document):
             return
 
         try:
-            # Disguise the Python script as a normal Google Chrome browser to bypass anti-bot security
-            custom_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            feed = feedparser.parse(self.feed_url, agent=custom_agent)
+            # Create the Cloudflare bypass scraper
+            scraper = cloudscraper.create_scraper()
+            
+            # Fetch the raw XML content securely
+            response = scraper.get(self.feed_url, timeout=20)
+            
+            # Throw an explicit error if the firewall still blocks us
+            if response.status_code == 403:
+                frappe.throw(f"Firewall is aggressively blocking access to {self.feed_url}")
+            response.raise_for_status() 
+            
+            # Pass the raw content to feedparser
+            feed = feedparser.parse(response.content)
             
             # Check if feed is valid
             if getattr(feed, "bozo", False) and feed.bozo == 1 and not feed.entries:
@@ -82,26 +116,18 @@ class RSSFeedSource(Document):
                         if not file_name or len(file_name) < 3:
                             file_name = "downloaded_document.pdf"
 
-                        # --- THE NSE TARPIT FIX: Disguise the PDF download request ---
-                        headers = {
-                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,application/pdf,*/*;q=0.8",
-                            "Accept-Language": "en-US,en;q=0.5",
-                            "Connection": "keep-alive",
-                            "Upgrade-Insecure-Requests": "1"
-                        }
-
+                        # --- THE NSE TARPIT FIX ---
                         if "nsearchives.nseindia.com" in file_url and "nsearchives.nseindia.com/" not in file_url:
                             file_url = file_url.replace("nsearchives.nseindia.com", "nsearchives.nseindia.com/")
 
-                        # Fetch the actual file bytes (timeout increased to 60s and headers added)
-                        response = requests.get(file_url, headers=headers, stream=True, timeout=60)
+                        # Fetch the actual file bytes using our new robust 3-try function
+                        file_content = download_attachment_safely(file_url)
                         
-                        if response.status_code == 200:
+                        if file_content:
                             # Native Frappe function to save the file and link it to the doc
                             save_file(
                                 fname=file_name,
-                                content=response.content,
+                                content=file_content,
                                 dt="RSS Feed Article",
                                 dn=doc.name,
                                 df="file_attachment",
@@ -122,3 +148,32 @@ class RSSFeedSource(Document):
             frappe.log_error(title=f"RSS Fetch Error: {self.name}", message=frappe.get_traceback())
             if frappe.request:
                 frappe.throw(f"An error occurred while fetching the feed. Check Error Logs.")
+
+    # @frappe.whitelist()
+    def process_stuck_articles(self):
+        """Finds any articles for this source that are stuck in 'Pending' and re-queues them."""
+        stuck_articles = frappe.get_all("RSS Feed Article", 
+            filters={
+                "ai_processing_status": "Pending", 
+                "source": self.name
+            },
+            limit=50
+        )
+        
+        for a in stuck_articles:
+            frappe.enqueue_doc(
+                "RSS Feed Article",
+                a.name,
+                "generate_ai_summary",
+                queue="long",
+                timeout=1500
+            )
+        
+        return len(stuck_articles)
+    
+def requeue_all_stuck():
+    """Global task to find ALL stuck articles across all sources and re-queue them."""
+    sources = frappe.get_all("RSS Feed Source", filters={"status": "Active"})
+    for s in sources:
+        doc = frappe.get_doc("RSS Feed Source", s.name)
+        doc.process_stuck_articles()
