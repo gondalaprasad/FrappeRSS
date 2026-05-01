@@ -1,271 +1,479 @@
+# Copyright (c) 2024, Your Company and contributors
+# For license information, please see license.txt
+
 import frappe
 from frappe.model.document import Document
-import litellm
 import os
-import tempfile
 import zipfile
+import tempfile
+import shutil
+import requests
+from frappe.utils import get_url_to_form, strip_html, markdown
 from frappe.utils.file_manager import save_file
-import pytesseract
-from frappe.utils import markdown, get_url_to_form, strip_html
 
 class RSSFeedArticle(Document):
-    
+
     def after_insert(self):
-        """Triggered automatically right after the article is saved to the database."""
+        """Triggered automatically right after the article is saved."""
         settings = frappe.get_single("RSS App Settings")
-        
         if settings.enable_ai_pipeline and self.ai_processing_status == "Pending":
-            frappe.db.commit() 
+            frappe.db.commit()
             frappe.enqueue_doc(
-                self.doctype, 
-                self.name, 
-                "generate_ai_summary", 
-                queue="long", 
-                timeout=1500
+                self.doctype,
+                self.name,
+                "generate_ai_summary",
+                queue="long",
+                timeout=1500,
+                enqueue_after_commit=True
             )
+
+    # =========================================================================
+    # STEP 1: ATTACHMENT & FILE HANDLING
+    # =========================================================================
+
+    # def _handle_attachments(self):
+    #     """Final RBI fetcher: stable + HTML extraction + AI-ready."""
+
+    #     import requests
+    #     import frappe
+    #     from frappe.utils.file_manager import save_file
+    #     import tempfile
+    #     import os
+    #     import shutil
+    #     import time
+    #     import random
+    #     from bs4 import BeautifulSoup
+
+    #     if not self.article_url:
+    #         return
+
+    #     temp_dir = tempfile.mkdtemp(prefix="frappe_ingest_")
+
+    #     # ✅ Force HTTPS
+    #     url = self.article_url.replace("http://", "https://").strip()
+
+    #     headers = {
+    #         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36",
+    #         "Referer": "https://www.rbi.org.in/"
+    #     }
+
+    #     try:
+    #         # ✅ Prevent throttling
+    #         time.sleep(random.uniform(2, 4))
+
+    #         session = requests.Session()
+
+    #         # ✅ Warmup (important for RBI)
+    #         session.get("https://www.rbi.org.in/", headers=headers, timeout=(5, 10))
+
+    #         # ✅ Fetch page
+    #         res = session.get(
+    #             url,
+    #             headers=headers,
+    #             timeout=(5, 90),
+    #             allow_redirects=True
+    #         )
+
+    #         res.raise_for_status()
+    #         content = res.content
+
+    #         if not content:
+    #             raise Exception("Empty response from RBI")
+
+    #         # =========================
+    #         # 🔥 DETECT HTML
+    #         # =========================
+    #         is_html = b"<html" in content.lower()
+
+    #         filename = (url.split('/')[-1] or "content").split('?')[0]
+
+    #         if is_html:
+    #             filename = filename.replace(".aspx", "") + ".html"
+    #         else:
+    #             if "." not in filename:
+    #                 filename += ".bin"
+
+    #         file_path = os.path.join(temp_dir, filename)
+
+    #         with open(file_path, 'wb') as f:
+    #             f.write(content)
+
+    #         # =========================
+    #         # 🔥 EXTRACT TEXT FOR AI
+    #         # =========================
+    #         if is_html:
+    #             try:
+    #                 soup = BeautifulSoup(content, "html.parser")
+
+    #                 # remove unwanted tags
+    #                 for tag in soup(["script", "style"]):
+    #                     tag.decompose()
+
+    #                 clean_text = soup.get_text(separator="\n", strip=True)
+
+    #                 if clean_text:
+    #                     # ✅ THIS FIXES YOUR "No readable content" ISSUE
+    #                     self.db_set("raw_content", clean_text[:50000])
+
+    #             except Exception as e:
+    #                 frappe.log_error("HTML Parse Failed", str(e))
+
+    #         # =========================
+    #         # SAVE FILE
+    #         # =========================
+    #         with open(file_path, 'rb') as f:
+    #             saved_file = save_file(
+    #                 fname=filename,
+    #                 content=f.read(),
+    #                 dt=self.doctype,
+    #                 dn=self.name,
+    #                 is_private=1
+    #             )
+
+    #         # =========================
+    #         # UPDATE DOC
+    #         # =========================
+    #         self.db_set("file_attachment", saved_file.file_url)
+    #         frappe.db.commit()
+    #         self.reload()
+
+    #         # =========================
+    #         # ZIP HANDLING
+    #         # =========================
+    #         if self.file_attachment and self.file_attachment.lower().endswith(".zip"):
+    #             file_doc_name = frappe.db.get_value("File", {"file_url": self.file_attachment}, "name")
+    #             if file_doc_name:
+    #                 zip_path = frappe.get_doc("File", file_doc_name).get_full_path()
+    #                 self._process_zip_contents(zip_path)
+
+    #     except Exception as e:
+    #         frappe.log_error(f"Attachment Failed: {self.name}", str(e))
+
+    #     finally:
+    #         shutil.rmtree(temp_dir, ignore_errors=True)
+
+
+    def _handle_attachments(self):
+        """Stable RBI fetcher + smart HTML extraction (no raw_content override issue)."""
+
+        import requests
+        import frappe
+        from frappe.utils.file_manager import save_file
+        import tempfile
+        import os
+        import shutil
+        import time
+        import random
+        from bs4 import BeautifulSoup
+
+        if not self.article_url:
+            return
+
+        temp_dir = tempfile.mkdtemp(prefix="frappe_ingest_")
+
+        url = self.article_url.replace("http://", "https://").strip()
+
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36",
+            "Referer": "https://www.rbi.org.in/"
+        }
+
+        try:
+            time.sleep(random.uniform(2, 4))
+
+            session = requests.Session()
+            session.get("https://www.rbi.org.in/", headers=headers, timeout=(5, 10))
+
+            res = session.get(url, headers=headers, timeout=(5, 90), allow_redirects=True)
+            res.raise_for_status()
+            content = res.content
+
+            if not content:
+                raise Exception("Empty response")
+
+            # =========================
+            # DETECT HTML
+            # =========================
+            is_html = b"<html" in content.lower()
+
+            filename = (url.split('/')[-1] or "content").split('?')[0]
+
+            if is_html:
+                filename = filename.replace(".aspx", "") + ".html"
+            else:
+                if "." not in filename:
+                    filename += ".bin"
+
+            file_path = os.path.join(temp_dir, filename)
+
+            with open(file_path, 'wb') as f:
+                f.write(content)
+
+            # =========================
+            # 🔥 SMART EXTRACTION
+            # =========================
+            if is_html:
+                try:
+                    soup = BeautifulSoup(content, "html.parser")
+
+                    # Try to get only main RBI content
+                    main = (
+                        soup.find(id="wrapper")
+                        or soup.find(id="content")
+                        or soup.find(class_="content")
+                        or soup.find("table")  # RBI often uses tables
+                        or soup.body
+                    )
+
+                    # Remove junk
+                    for tag in main(["script", "style", "nav", "header", "footer"]):
+                        tag.decompose()
+
+                    # Extract structured text
+                    lines = []
+                    for elem in main.find_all(["p", "li", "h1", "h2", "h3", "h4"]):
+                        text = elem.get_text(strip=True)
+                        if text and len(text) > 20:  # filter noise
+                            lines.append(text)
+
+                    clean_text = "\n\n".join(lines)
+
+                    # ✅ CRITICAL FIX: don't overwrite good RSS content
+                    if clean_text:
+                        if not self.raw_content or len(self.raw_content.strip()) < 200:
+                            self.db_set("raw_content", clean_text[:50000])
+
+                except Exception as e:
+                    frappe.log_error("HTML Parse Failed", str(e))
+
+            # =========================
+            # SAVE FILE
+            # =========================
+            with open(file_path, 'rb') as f:
+                saved_file = save_file(
+                    fname=filename,
+                    content=f.read(),
+                    dt=self.doctype,
+                    dn=self.name,
+                    is_private=1
+                )
+
+            # =========================
+            # UPDATE DOC
+            # =========================
+            self.db_set("file_attachment", saved_file.file_url)
+            frappe.db.commit()
+            self.reload()
+
+            # =========================
+            # ZIP HANDLING
+            # =========================
+            if self.file_attachment and self.file_attachment.lower().endswith(".zip"):
+                file_doc_name = frappe.db.get_value("File", {"file_url": self.file_attachment}, "name")
+                if file_doc_name:
+                    zip_path = frappe.get_doc("File", file_doc_name).get_full_path()
+                    self._process_zip_contents(zip_path)
+
+        except Exception as e:
+            frappe.log_error(f"Attachment Failed: {self.name}", str(e))
+
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def _process_zip_contents(self, zip_path):
+        """Extracts PDFs and identifies the 'Main' circular."""
+        extract_dir = tempfile.mkdtemp(prefix="frappe_zip_")
+        extracted_pdfs = []
+        try:
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                for member in zip_ref.namelist():
+                    filename = os.path.basename(member)
+                    if not filename.lower().endswith(".pdf"): continue
+                    with zip_ref.open(member) as source:
+                        target_path = os.path.join(extract_dir, filename)
+                        with open(target_path, "wb") as target:
+                            shutil.copyfileobj(source, target)
+                    with open(target_path, 'rb') as f:
+                        saved_file = save_file(fname=filename, content=f.read(), dt=self.doctype, dn=self.name, is_private=1)
+                        extracted_pdfs.append(saved_file)
+
+            if extracted_pdfs:
+                primary_pdf = None
+                keywords = ["circular", "press", "notification", "main", "report"]
+                for pdf in extracted_pdfs:
+                    if any(k in pdf.file_name.lower() for k in keywords):
+                        primary_pdf = pdf
+                        break
+                if not primary_pdf: primary_pdf = extracted_pdfs[0]
+                self.db_set("file_attachment", primary_pdf.file_url)
+            frappe.db.commit()
+        finally:
+            shutil.rmtree(extract_dir, ignore_errors=True)
+
+    # =========================================================================
+    # STEP 2: TEXT EXTRACTION
+    # =========================================================================
+
+    def _extract_text_from_html(self, url):
+        """Scrapes text with headers to ensure content found for RBI ones."""
+        from bs4 import BeautifulSoup
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+            "Referer": "https://www.google.com/"
+        }
+        try:
+            res = requests.get(url, timeout=30, headers=headers)
+            res.raise_for_status()
+            soup = BeautifulSoup(res.text, 'html.parser')
+            for script in soup(["script", "style"]): script.decompose()
+            return soup.get_text(separator=' ', strip=True)
+        except:
+            return ""
+
+    def _extract_text_from_all_attachments(self):
+        all_text = ""
+        self.reload()
+        main_url = self.file_attachment
+        files = frappe.get_all("File", filters={"attached_to_doctype": self.doctype, "attached_to_name": self.name}, fields=["name", "file_name", "file_url"])
+        
+        # Prioritize elected main file
+        sorted_files = sorted(files, key=lambda x: x['file_url'] != main_url)
+        for f in sorted_files:
+            if not f.file_url.lower().endswith((".pdf", ".txt", ".png", ".jpg", ".jpeg")): continue
+            f_doc = frappe.get_doc("File", f.name)
+            path = f_doc.get_full_path()
+            if os.path.exists(path):
+                file_text = self._extract_text_from_file(path)
+                prefix = "[MAIN DOCUMENT]" if f.file_url == main_url else "[ANNEXURE]"
+                all_text += f"\n{prefix} Source: {f.file_name}\n{file_text}\n"
+        return all_text
+
+    def _extract_text_from_file(self, file_path):
+        text = ""
+        try:
+            if file_path.lower().endswith(".pdf"):
+                import fitz
+                with fitz.open(file_path) as pdf:
+                    for page in pdf: text += page.get_text() + "\n"
+            elif file_path.lower().endswith((".png", ".jpg", ".jpeg")):
+                from PIL import Image
+                import pytesseract
+                text += pytesseract.image_to_string(Image.open(file_path)) + "\n"
+            elif file_path.lower().endswith(".txt"):
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f: text = f.read()
+        except: pass
+        return text
+
+    # =========================================================================
+    # STEP 3: AI PIPELINE & NOTIFICATIONS
+    # =========================================================================
 
     @frappe.whitelist()
     def generate_ai_summary(self):
-        """Attempts to summarize the raw content or attached files using the Fallback Chain."""
-
-        # --- THE DOUBLE LOCK ---
+        self.reload() # CRITICAL: Fixes Error 1020
         settings = frappe.get_single("RSS App Settings")
-        if not settings.enable_ai_pipeline:
-            return
+        if not settings.enable_ai_pipeline or self.ai_processing_status in ["Completed", "Summarizing"]: return
 
-        # ==========================================
-        # --- THE UPDATED SHIELD (CRITICAL FIX) ---
-        # ==========================================
-        
-        # 1. KILL DUPLICATES: If it is already done OR currently being worked on, STOP.
-        if self.ai_processing_status in ["Completed", "Summarizing", "Skipped (Source Inactive)"]:
-            return
-
-        # 2. LOCK IT IMMEDIATELY: Set to Summarizing so no other worker touches this article.
         self.db_set("ai_processing_status", "Summarizing")
         frappe.db.commit()
 
-        # ==========================================
-        # --- THE TRIPLE LOCK: SOURCE STATUS CHECK ---
-        # ==========================================
-        if self.source:
-            source_status = frappe.db.get_value("RSS Feed Source", self.source, "status")
-            if source_status != "Active":
-                self.db_set("ai_processing_status", "Skipped (Source Inactive)")
+        try:
+            self._handle_attachments()
+            final_content = self._extract_text_from_all_attachments()
+            
+            # Scrape HTML if PDF extraction didn't yield text (RBI Case)
+            if not final_content.strip() and self.article_url:
+                final_content = self._extract_text_from_html(self.article_url)
+            
+            if not final_content.strip():
+                final_content = self.raw_content or ""
+
+            if not final_content.strip():
+                self.db_set({"ai_processing_status": "Failed", "ai_summary": "No readable content found."})
                 frappe.db.commit()
                 return
 
-        # --- HELPER FUNCTION: Only reads PDFs and Images ---
-        def extract_text_from_path(file_path):
-            text = ""
-            ext = file_path.lower()
-            try:
-                # 1. PDF Handling
-                if ext.endswith(".pdf"):
-                    import fitz
-                    try:
-                        with fitz.open(file_path) as pdf:
-                            for page in pdf:
-                                text += page.get_text() + "\n"
-                    except Exception as pdf_err:
-                        frappe.log_error("PDF Read Error", str(pdf_err))
-                        text += "\n[Error: Could not read PDF text natively. The file may be corrupted or protected.]\n"
-                            
-                # 2. Image Handling (OCR)
-                elif ext.endswith((".png", ".jpg", ".jpeg")):
-                    from PIL import Image
-                    text += pytesseract.image_to_string(Image.open(file_path)) + "\n"
-            except Exception as e:
-                frappe.log_error(title=f"Extraction Error for {os.path.basename(file_path)}", message=str(e))
-                
-            return text
+            self._run_ai_fallback_chain(final_content)
+        except Exception as e:
+            self._handle_failure(str(e))
 
-        # --- MAIN EXTRACTION LOGIC ---
-        extracted_file_text = ""
-        
-        if self.file_attachment:
-            try:
-                file_doc_name = frappe.db.get_value("File", {"file_url": self.file_attachment}, "name")
-                if file_doc_name:
-                    doc_file = frappe.get_doc("File", file_doc_name)
-                    main_file_path = doc_file.get_full_path()
-                    
-                    if main_file_path.lower().endswith(".zip"):
-                        with tempfile.TemporaryDirectory() as tmpdirname:
-                            with zipfile.ZipFile(main_file_path, 'r') as zip_ref:
-                                zip_ref.extractall(tmpdirname)
-                                
-                            # Walk through the extracted temporary folder
-                            for root, dirs, files in os.walk(tmpdirname):
-                                for file_name in files:
-                                    extracted_path = os.path.join(root, file_name)
-                                    
-                                    # 1. Read the file bytes and attach it to the Frappe sidebar
-                                    try:
-                                        with open(extracted_path, 'rb') as f:
-                                            file_content = f.read()
-                                            
-                                        # Notice we DO NOT use 'df' here, so it goes to the generic attachments sidebar
-                                        save_file(
-                                            fname=file_name,
-                                            content=file_content,
-                                            dt=self.doctype,
-                                            dn=self.name,
-                                            is_private=1
-                                        )
-                                    except Exception as attach_err:
-                                        frappe.log_error(title="Zip File Attach Error", message=str(attach_err))
-
-                                    # 2. Extract text ONLY if it is an AI-readable format
-                                    if file_name.lower().endswith(('.pdf', '.png', '.jpg', '.jpeg')):
-                                        extracted_file_text += f"\n--- Start of {file_name} ---\n"
-                                        extracted_file_text += extract_text_from_path(extracted_path)
-                                        extracted_file_text += f"\n--- End of {file_name} ---\n"
-                    else:
-                        # It's a normal standalone file
-                        extracted_file_text = extract_text_from_path(main_file_path)
-                        
-            except Exception as e:
-                frappe.log_error(title=f"Master File Extraction Failed: {self.name}", message=str(e))
-
-        # Combine the text. Prioritize the extracted file text if it exists.
-        final_content_to_summarize = extracted_file_text if extracted_file_text.strip() else self.raw_content
-
-        if not final_content_to_summarize:
-            frappe.msgprint("No content or file available to summarize.")
-            return
-
-        # --- AI FALLBACK LOOP ---
+    def _run_ai_fallback_chain(self, content):
+        import litellm
         profiles = frappe.get_all("AI Provider Profile", filters={"is_enabled": 1}, order_by="priority_sequence asc")
-        if not profiles:
-            frappe.throw("No active AI Provider Profiles found. Please configure one.")
+        if not profiles: raise Exception("No active AI Providers.")
 
-        self.db_set("ai_processing_status", "Summarizing")
-        frappe.db.commit()
-
+        last_error = ""
         for p in profiles:
             profile = frappe.get_doc("AI Provider Profile", p.name)
             
-            model_string = profile.model_name
-            if profile.provider_type == "OpenRouter":
-                model_string = f"openrouter/{profile.model_name}"
-            elif profile.provider_type == "Ollama":
-                model_string = f"ollama/{profile.model_name}"
+            # Provider Mapping for LiteLLM
+            if profile.provider_type == "Zhipu AI (GLM)":
+                model_string = f"zhipu/{profile.model_name}"
+            elif profile.provider_type == "Dashscope (Qwen)":
+                model_string = f"dashscope/{profile.model_name}"
+            elif profile.provider_type in ["OpenRouter", "Ollama"]:
+                model_string = f"{profile.provider_type.lower()}/{profile.model_name}"
+            else:
+                model_string = profile.model_name
 
             try:
-                api_key = profile.get_password("api_key") if profile.api_key else None
-                
-                prompt = f"Please analyze and summarize the following document/data in 4 to 5 detailed bullet points. Focus on the core facts, trends, and findings.\n\n{final_content_to_summarize[:25000]}" 
-
                 response = litellm.completion(
                     model=model_string,
-                    messages=[{"role": "user", "content": prompt}],
-                    api_key=api_key,
+                    messages=[{"role": "user", "content": f"Summarize in short 1 or 2 paras with key details and/or dates as per content:\n\n{content[:20000]}"}],
+                    api_key=profile.get_password("api_key") if profile.api_key else None,
                     api_base=profile.base_url or None,
-                    timeout=45
+                    timeout=60
                 )
-
-                # Get the raw markdown summary from AI
-                raw_summary = response.choices[0].message.content
-                
-                # Convert Markdown to HTML for the Text Editor field
-                html_summary = markdown(raw_summary)
-                
-                # Save the HTML formatted summary
-                self.db_set("ai_summary", html_summary)
-                self.db_set("ai_processing_status", "Completed")
+                self.db_set({"ai_summary": markdown(response.choices[0].message.content), "ai_processing_status": "Completed"})
                 frappe.db.commit()
-
-                # INJECT THIS LINE RIGHT HERE:
+                self.reload()
                 self.send_google_chat_notification()
-
-                if frappe.request: 
-                    frappe.msgprint(f"Successfully summarized using {profile.provider_name}!")
-                return 
-
+                return
             except Exception as e:
-                frappe.log_error(title=f"AI Fallback: {profile.provider_name} Failed", message=str(e))
+                last_error = str(e)
                 continue
-        
-        self.db_set("ai_processing_status", "Check Manually")
+        raise Exception(f"AI Failed. Last error: {last_error}")
+
+    def _handle_failure(self, error_message):
+        frappe.db.rollback()
+        self.reload()
+        if "[RETRY]" in (self.ai_summary or ""):
+            self.db_set({"ai_processing_status": "Failed", "ai_summary": f"<span style='color:red;'>[FINAL FAILURE] {error_message}</span>"})
+        else:
+            self.db_set({"ai_processing_status": "Pending", "ai_summary": f"[RETRY] Attempt 1 failed: {error_message}"})
+            frappe.enqueue_doc(self.doctype, self.name, "generate_ai_summary", queue="long", timeout=1500)
         frappe.db.commit()
-        if frappe.request:
-            frappe.throw("All AI Providers failed to summarize the article. Check Error Logs.")
 
     def send_google_chat_notification(self):
-        """Sends a formatted message to ALL mapped Google Chat webhooks IF it passes keyword filters."""
+        """Restored Alert Logic with verified fields from console."""
         try:
-            import requests
-
-            if not self.source:
-                return
+            if not self.source: return
             
             source_doc = frappe.get_doc("RSS Feed Source", self.source)
-            
-            # Check if there are any webhooks added
-            if not source_doc.get("webhooks"):
-                return 
+            if not source_doc.webhooks: return 
 
-            # ==========================================
-            # --- INTELLIGENCE FILTER: KEYWORD CHECK ---
-            # ==========================================
+            # Keywords Logic
+            search_text = f"{self.title} {self.ai_summary or ''}".lower()
+            def parse_kws(s): return [k.strip().lower() for k in s.split(',') if k.strip()] if s else []
             
-            # 1. Combine all available text into a massive lowercase search string
-            search_text = f"{self.title} {self.ai_summary or ''} {self.raw_content or ''}".lower()
-            
-            # Helper function to cleanly split comma-separated keywords
-            def parse_keywords(kw_string):
-                if not kw_string: return []
-                return [k.strip().lower() for k in kw_string.split(',') if k.strip()]
+            if any(bw in search_text for bw in parse_kws(source_doc.blocked_keywords)): return 
+            allowed = parse_kws(source_doc.allowed_keywords)
+            if allowed and not any(aw in search_text for aw in allowed): return
 
-            allowed_kws = parse_keywords(source_doc.get("allowed_keywords"))
-            blocked_kws = parse_keywords(source_doc.get("blocked_keywords"))
-
-            # 2. The Blocked Check (Absolute Override)
-            for bw in blocked_kws:
-                if bw in search_text:
-                    frappe.log_error(title="Alert Halted: Blocked Keyword", message=f"Article: {self.name}\nBlocked Word Found: '{bw}'")
-                    return 
-
-            # 3. The Allowed Check (Must contain at least one, IF the list isn't empty)
-            if allowed_kws:
-                has_allowed = any(aw in search_text for aw in allowed_kws)
-                if not has_allowed:
-                    return 
-                    
-            # ==========================================
-            # --- END FILTER (PROCEED TO SEND) ---------
-            # ==========================================
-
-            # Generate the internal Frappe Desk link for the article
-            # Generate the internal Frappe Desk link for the article
-            frappe_article_url = get_url_to_form("RSS Feed Article", self.name)
-            
-            # Get the original external URL
-            original_link = self.article_url or "https://#"
-            
-            # Strip the HTML tags out of the summary so it looks clean in Google Chat
+            # Notification Content
+            frappe_url = get_url_to_form(self.doctype, self.name)
             clean_summary = strip_html(self.ai_summary or "")
-
+            
+            # Using verified field names: self.title and source_doc.feed_name
             message_text = f"🚨 *PRIORITY ALERT: {self.title}*\n\n"
             message_text += f"*Source:* {source_doc.feed_name}\n\n"
-            message_text += f"*AI Summary:*\n{clean_summary}\n\n"
-            
-            # 🔗 Format: <URL|Display Text>
-            message_text += f"🔗 <{original_link}|Attachment> | <{frappe_article_url}|Frappe Article>"
+            message_text += f"*AI Summary:*\n{clean_summary[:1500]}\n\n"
+            message_text += f"🔗 <{self.article_url}|Original> | <{frappe_url}|Frappe Article>"
 
-            payload = {"text": message_text}
-            headers = {"Content-Type": "application/json"}
-
-            # Fire a message to every webhook in the table!
             for row in source_doc.webhooks:
-                webhook_doc = frappe.get_doc("Google Chat Webhook", row.webhook)
-                
-                if webhook_doc.is_active and webhook_doc.webhook_url:
-                    response = requests.post(webhook_doc.webhook_url, json=payload, headers=headers, timeout=30)
-                    
-                    if response.status_code not in [200, 201]:
-                        frappe.log_error(title=f"Google Chat Webhook Failed: {webhook_doc.webhook_name}", message=response.text)
-
+                # Verified field: webhook_url and is_active (not is_enabled)
+                webhook = frappe.get_doc("Google Chat Webhook", row.webhook)
+                if webhook.is_active and webhook.webhook_url:
+                    requests.post(webhook.webhook_url, json={"text": message_text}, timeout=30)
         except Exception as e:
-            frappe.log_error(title=f"Webhook Execution Error: {self.name}", message=str(e))
+            frappe.log_error(f"Notification Error: {self.name}", str(e))

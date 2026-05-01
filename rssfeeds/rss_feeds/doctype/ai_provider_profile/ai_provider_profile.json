@@ -32,11 +32,11 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Provider Type",
-   "options": "OpenAI\nGemini\nClaude\nGrok\nOpenRouter\nLM Studio\nOllama",
+   "options": "OpenAI\nGemini\nClaude\nGrok\nDeepSeek\nMistral\nDashscope (Qwen)\nZhipu AI (GLM)\nOpenRouter\nPerplexity\nTavily (Search)\nGitHub Models\nBifrost Gateway\nPortkey\nLM Studio\nOllama",
    "reqd": 1
   },
   {
-   "description": "e.g., 'gpt-4o', 'gemini-1.5-pro', 'llama3'",
+   "description": "e.g., 'gpt-4o', 'deepseek-reasoner', 'qwen-max', 'gemini-2.0-flash'",
    "fieldname": "model_name",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -74,7 +74,7 @@
    "label": "API Key"
   },
   {
-   "description": "Required for local models. e.g., 'http://localhost:11434/v1'",
+   "description": "Required for local models or custom gateways. e.g., 'http://localhost:11434/v1' or 'https://api.openrouter.ai/v1'",
    "fieldname": "base_url",
    "fieldtype": "Data",
    "label": "Base URL"
@@ -83,7 +83,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-30 10:15:49.409775",
+ "modified": "2026-05-01 17:25:00.000000",
  "modified_by": "Administrator",
  "module": "RSS Feeds",
  "name": "AI Provider Profile",
