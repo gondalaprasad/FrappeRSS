@@ -5,7 +5,7 @@
    "label": "Day wise Feeds"
   }
  ],
- "content": "[{\"id\":\"kXuGv_0RK0\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h2\\\"><span class=\\\"h4\\\" style=\\\"\\\">Articles</span></span>\",\"col\":9}},{\"id\":\"bbWoJbVk44\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Favorites\",\"col\":3}},{\"id\":\"m1bPMhjfOR\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Completed\",\"col\":3}},{\"id\":\"34a0ldxO_Q\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Pending\",\"col\":3}},{\"id\":\"SXWaW7oIg2\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Summarizing\",\"col\":3}},{\"id\":\"fFhjKYTZ_1\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Failed\",\"col\":3}},{\"id\":\"7uV66kJfw7\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Day wise Feeds\",\"col\":12}},{\"id\":\"8HfxRWuPS4\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\" style=\\\"\\\">Quick Links</span>\",\"col\":12}},{\"id\":\"iRGAxMFrGU\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"NSE\",\"col\":3}},{\"id\":\"R9C-MUOvra\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"MCX\",\"col\":3}},{\"id\":\"FnJQZZ0M6h\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"RBI\",\"col\":3}},{\"id\":\"rxTr3EXCop\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"SEBI\",\"col\":3}},{\"id\":\"4w6PHj6F7X\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\" style=\\\"\\\">Alerts</span>\",\"col\":12}},{\"id\":\"vYvu299iT5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Set Alert\",\"col\":3}},{\"id\":\"lKizjb2onI\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Active\",\"col\":3}},{\"id\":\"Xby-VXWWfs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Trigerred\",\"col\":3}},{\"id\":\"X9N8U_7yZu\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Paused\",\"col\":3}},{\"id\":\"g8aWc7CBEJ\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b></b>Settings</span>\",\"col\":12}},{\"id\":\"DviqPsILJe\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Enable / Disable Alerts\",\"col\":3}},{\"id\":\"sDJdzhPtW1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Google Webhook\",\"col\":3}},{\"id\":\"MapiueJk1c\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"RSS Source\",\"col\":3}},{\"id\":\"J3W8ay3upA\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"AI Models\",\"col\":3}},{\"id\":\"vJkzbfVia-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Documentation\",\"col\":3}}]",
+ "content": "[{\"id\":\"kXuGv_0RK0\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h2\\\"><span class=\\\"h4\\\" style=\\\"\\\">Articles</span></span>\",\"col\":9}},{\"id\":\"bbWoJbVk44\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Favorites\",\"col\":3}},{\"id\":\"m1bPMhjfOR\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Completed\",\"col\":3}},{\"id\":\"34a0ldxO_Q\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Pending\",\"col\":3}},{\"id\":\"SXWaW7oIg2\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Summarizing\",\"col\":3}},{\"id\":\"fFhjKYTZ_1\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Failed\",\"col\":3}},{\"id\":\"7uV66kJfw7\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Day wise Feeds\",\"col\":12}},{\"id\":\"8HfxRWuPS4\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\" style=\\\"\\\">Quick Links</span>\",\"col\":12}},{\"id\":\"iRGAxMFrGU\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"NSE\",\"col\":3}},{\"id\":\"R9C-MUOvra\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"MCX\",\"col\":3}},{\"id\":\"FnJQZZ0M6h\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"RBI\",\"col\":3}},{\"id\":\"rxTr3EXCop\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"SEBI\",\"col\":3}},{\"id\":\"4w6PHj6F7X\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\" style=\\\"\\\">Alerts</span>\",\"col\":9}},{\"id\":\"96fNrkPYcQ\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Documentation</b></span>\",\"col\":3}},{\"id\":\"vYvu299iT5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Set Alert\",\"col\":3}},{\"id\":\"lKizjb2onI\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Active\",\"col\":3}},{\"id\":\"X9N8U_7yZu\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Paused\",\"col\":3}},{\"id\":\"bjJ6QZ9vrJ\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Documentation\",\"col\":3}},{\"id\":\"Xby-VXWWfs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Trigerred\",\"col\":3}}]",
  "creation": "2026-04-29 08:57:09.170873",
  "custom_blocks": [],
  "docstatus": 0,
@@ -18,7 +18,7 @@
  "is_hidden": 0,
  "label": "FrappeRSS",
  "links": [],
- "modified": "2026-04-30 23:12:02.175385",
+ "modified": "2026-05-01 23:20:03.923563",
  "modified_by": "Administrator",
  "module": "RSS Feeds",
  "name": "FrappeRSS",
@@ -48,11 +48,10 @@
  "sequence_id": 1.0,
  "shortcuts": [
   {
-   "color": "Green",
+   "color": "Grey",
    "doc_view": "List",
-   "label": "RSS Source",
-   "link_to": "RSS Feed Source",
-   "stats_filter": "[[\"RSS Feed Source\",\"status\",\"=\",\"Active\",false]]",
+   "label": "Documentation",
+   "link_to": "FrappeRSS Documentation",
    "type": "DocType"
   },
   {
@@ -80,13 +79,6 @@
    "type": "DocType"
   },
   {
-   "color": "Grey",
-   "doc_view": "List",
-   "label": "Enable / Disable Alerts",
-   "link_to": "RSS App Settings",
-   "type": "DocType"
-  },
-  {
    "color": "Green",
    "doc_view": "List",
    "label": "Trigerred",
@@ -97,32 +89,9 @@
   {
    "color": "Grey",
    "doc_view": "List",
-   "label": "AI Models",
-   "link_to": "AI Provider Profile",
-   "stats_filter": "[]",
-   "type": "DocType"
-  },
-  {
-   "color": "Grey",
-   "doc_view": "New",
-   "label": "Google Webhook",
-   "link_to": "Google Chat Webhook",
-   "stats_filter": "[]",
-   "type": "DocType"
-  },
-  {
-   "color": "Grey",
-   "doc_view": "List",
    "label": "NSE",
    "link_to": "RSS Feed Article",
    "stats_filter": "[[\"RSS Feed Article\",\"source\",\"in\",[\"NSE Circulars\",\"NSE Announcements\",\"NSE Corporate Actions\"],false]]",
-   "type": "DocType"
-  },
-  {
-   "color": "Grey",
-   "doc_view": "List",
-   "label": "Documentation",
-   "link_to": "FrappeRSS Documentation",
    "type": "DocType"
   },
   {

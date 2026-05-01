@@ -25,7 +25,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-04-30 11:38:09.053013",
+ "modified": "2026-05-01 23:08:33.282923",
  "modified_by": "Administrator",
  "module": "RSS Feeds",
  "name": "FrappeRSS Documentation",
@@ -42,11 +42,8 @@
    "write": 1
   },
   {
-   "email": 1,
-   "print": 1,
    "read": 1,
-   "role": "RSS User",
-   "share": 1
+   "role": "RSS User"
   }
  ],
  "row_format": "Dynamic",

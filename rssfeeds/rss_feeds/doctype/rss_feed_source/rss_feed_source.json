@@ -83,7 +83,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-30 10:15:37.332054",
+ "modified": "2026-05-01 23:06:12.337525",
  "modified_by": "Administrator",
  "module": "RSS Feeds",
  "name": "RSS Feed Source",
@@ -100,15 +100,6 @@
    "role": "RSS Admin",
    "share": 1,
    "write": 1
-  },
-  {
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "RSS User",
-   "share": 1
   }
  ],
  "row_format": "Dynamic",
