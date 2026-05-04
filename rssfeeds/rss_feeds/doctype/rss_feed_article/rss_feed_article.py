@@ -31,8 +31,9 @@ class RSSFeedArticle(Document):
     # STEP 1: ATTACHMENT & FILE HANDLING
     # =========================================================================
 
+
     # def _handle_attachments(self):
-    #     """Final RBI fetcher: stable + HTML extraction + AI-ready."""
+    #     """Stable RBI fetcher + smart HTML extraction (no raw_content override issue)."""
 
     #     import requests
     #     import frappe
@@ -49,7 +50,6 @@ class RSSFeedArticle(Document):
 
     #     temp_dir = tempfile.mkdtemp(prefix="frappe_ingest_")
 
-    #     # ✅ Force HTTPS
     #     url = self.article_url.replace("http://", "https://").strip()
 
     #     headers = {
@@ -58,30 +58,20 @@ class RSSFeedArticle(Document):
     #     }
 
     #     try:
-    #         # ✅ Prevent throttling
     #         time.sleep(random.uniform(2, 4))
 
     #         session = requests.Session()
-
-    #         # ✅ Warmup (important for RBI)
     #         session.get("https://www.rbi.org.in/", headers=headers, timeout=(5, 10))
 
-    #         # ✅ Fetch page
-    #         res = session.get(
-    #             url,
-    #             headers=headers,
-    #             timeout=(5, 90),
-    #             allow_redirects=True
-    #         )
-
+    #         res = session.get(url, headers=headers, timeout=(5, 90), allow_redirects=True)
     #         res.raise_for_status()
     #         content = res.content
 
     #         if not content:
-    #             raise Exception("Empty response from RBI")
+    #             raise Exception("Empty response")
 
     #         # =========================
-    #         # 🔥 DETECT HTML
+    #         # DETECT HTML
     #         # =========================
     #         is_html = b"<html" in content.lower()
 
@@ -99,21 +89,38 @@ class RSSFeedArticle(Document):
     #             f.write(content)
 
     #         # =========================
-    #         # 🔥 EXTRACT TEXT FOR AI
+    #         # 🔥 SMART EXTRACTION
     #         # =========================
     #         if is_html:
     #             try:
     #                 soup = BeautifulSoup(content, "html.parser")
 
-    #                 # remove unwanted tags
-    #                 for tag in soup(["script", "style"]):
+    #                 # Try to get only main RBI content
+    #                 main = (
+    #                     soup.find(id="wrapper")
+    #                     or soup.find(id="content")
+    #                     or soup.find(class_="content")
+    #                     or soup.find("table")  # RBI often uses tables
+    #                     or soup.body
+    #                 )
+
+    #                 # Remove junk
+    #                 for tag in main(["script", "style", "nav", "header", "footer"]):
     #                     tag.decompose()
 
-    #                 clean_text = soup.get_text(separator="\n", strip=True)
+    #                 # Extract structured text
+    #                 lines = []
+    #                 for elem in main.find_all(["p", "li", "h1", "h2", "h3", "h4"]):
+    #                     text = elem.get_text(strip=True)
+    #                     if text and len(text) > 20:  # filter noise
+    #                         lines.append(text)
 
+    #                 clean_text = "\n\n".join(lines)
+
+    #                 # ✅ CRITICAL FIX: don't overwrite good RSS content
     #                 if clean_text:
-    #                     # ✅ THIS FIXES YOUR "No readable content" ISSUE
-    #                     self.db_set("raw_content", clean_text[:50000])
+    #                     if not self.raw_content or len(self.raw_content.strip()) < 200:
+    #                         self.db_set("raw_content", clean_text[:50000])
 
     #             except Exception as e:
     #                 frappe.log_error("HTML Parse Failed", str(e))
@@ -152,9 +159,8 @@ class RSSFeedArticle(Document):
     #     finally:
     #         shutil.rmtree(temp_dir, ignore_errors=True)
 
-
     def _handle_attachments(self):
-        """Stable RBI fetcher + smart HTML extraction (no raw_content override issue)."""
+        """Stable RBI fetcher + smart HTML extraction (No HTML file attachments!)."""
 
         import requests
         import frappe
@@ -170,7 +176,6 @@ class RSSFeedArticle(Document):
             return
 
         temp_dir = tempfile.mkdtemp(prefix="frappe_ingest_")
-
         url = self.article_url.replace("http://", "https://").strip()
 
         headers = {
@@ -180,10 +185,9 @@ class RSSFeedArticle(Document):
 
         try:
             time.sleep(random.uniform(2, 4))
-
             session = requests.Session()
             session.get("https://www.rbi.org.in/", headers=headers, timeout=(5, 10))
-
+            
             res = session.get(url, headers=headers, timeout=(5, 90), allow_redirects=True)
             res.raise_for_status()
             content = res.content
@@ -192,27 +196,14 @@ class RSSFeedArticle(Document):
                 raise Exception("Empty response")
 
             # =========================
-            # DETECT HTML
+            # DETECT HTML vs REAL FILE
             # =========================
             is_html = b"<html" in content.lower()
 
-            filename = (url.split('/')[-1] or "content").split('?')[0]
-
             if is_html:
-                filename = filename.replace(".aspx", "") + ".html"
-            else:
-                if "." not in filename:
-                    filename += ".bin"
-
-            file_path = os.path.join(temp_dir, filename)
-
-            with open(file_path, 'wb') as f:
-                f.write(content)
-
-            # =========================
-            # 🔥 SMART EXTRACTION
-            # =========================
-            if is_html:
+                # ----------------------------------------------------
+                # IT IS A WEBPAGE: Scrape text, do NOT attach a file!
+                # ----------------------------------------------------
                 try:
                     soup = BeautifulSoup(content, "html.parser")
 
@@ -238,40 +229,46 @@ class RSSFeedArticle(Document):
 
                     clean_text = "\n\n".join(lines)
 
-                    # ✅ CRITICAL FIX: don't overwrite good RSS content
                     if clean_text:
-                        if not self.raw_content or len(self.raw_content.strip()) < 200:
-                            self.db_set("raw_content", clean_text[:50000])
-
+                        # Save straight to raw_content so AI can read it
+                        self.db_set("raw_content", clean_text[:50000])
+                        frappe.db.commit()
+                        self.reload()
+                        
                 except Exception as e:
                     frappe.log_error("HTML Parse Failed", str(e))
 
-            # =========================
-            # SAVE FILE
-            # =========================
-            with open(file_path, 'rb') as f:
-                saved_file = save_file(
-                    fname=filename,
-                    content=f.read(),
-                    dt=self.doctype,
-                    dn=self.name,
-                    is_private=1
-                )
+            else:
+                # ----------------------------------------------------
+                # IT IS A FILE (.pdf, .zip, etc.): Download and attach
+                # ----------------------------------------------------
+                filename = (url.split('/')[-1] or "content").split('?')[0]
+                if "." not in filename:
+                    filename += ".bin"
 
-            # =========================
-            # UPDATE DOC
-            # =========================
-            self.db_set("file_attachment", saved_file.file_url)
-            frappe.db.commit()
-            self.reload()
+                file_path = os.path.join(temp_dir, filename)
 
-            # =========================
-            # ZIP HANDLING
-            # =========================
-            if self.file_attachment and self.file_attachment.lower().endswith(".zip"):
-                file_doc_name = frappe.db.get_value("File", {"file_url": self.file_attachment}, "name")
-                if file_doc_name:
-                    zip_path = frappe.get_doc("File", file_doc_name).get_full_path()
+                with open(file_path, 'wb') as f:
+                    f.write(content)
+
+                # SAVE FILE TO FRAPPE
+                with open(file_path, 'rb') as f:
+                    saved_file = save_file(
+                        fname=filename,
+                        content=f.read(),
+                        dt=self.doctype,
+                        dn=self.name,
+                        is_private=1
+                    )
+
+                # UPDATE DOC
+                self.db_set("file_attachment", saved_file.file_url)
+                frappe.db.commit()
+                self.reload()
+
+                # ZIP HANDLING
+                if self.file_attachment and self.file_attachment.lower().endswith(".zip"):
+                    zip_path = frappe.get_doc("File", saved_file.name).get_full_path()
                     self._process_zip_contents(zip_path)
 
         except Exception as e:
