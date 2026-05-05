@@ -8,9 +8,7 @@ app_license = "mit"
 # Requirements
 # ------------------
 # This line fixes the Marketplace 'NPM-style semver' error
-required_apps = [
-    {"name": "frappe", "version": ">=15.0.0 <16.0.0"}
-]
+required_apps = ["frappe@>=15.0.0,<16.0.0"]
 
 # Installation
 # ------------
