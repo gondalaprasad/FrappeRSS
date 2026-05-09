@@ -14,7 +14,7 @@
 
 ---
 
-## 📈 Repository Activity.
+## 📈 Repository Activity
 
 [![Star History Chart](https://api.star-history.com/svg?repos=gondalaprasad/FrappeRSS&type=Date)](https://star-history.com/#gondalaprasad/FrappeRSS&Date)
 
