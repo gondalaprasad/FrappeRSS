@@ -54,25 +54,6 @@ sudo apt-get install -y tesseract-ocr tesseract-ocr-eng libmupdf-dev
 
 ---
 
-## 🚀 Step-by-Step Installation
-
-Once the OS prerequisites are met, install the app onto your Frappe Bench using the standard workflow:
-
-**Step 1: Download the app to your bench**
-
-```bash
-bench get-app https://github.com/gondalaprasad/FrappeRSS.git
-```
-
-**Step 2: Install the app on your production site**
-
-```bash
-bench --site your_production_site.com install-app rssfeeds
-```
-
-> **Note:** The custom `install.py` script will automatically execute during this step to dynamically increase your Frappe system's Max File Size limit to **100MB**.
-
----
 
 ## 💻 Main Commands & Configuration
 

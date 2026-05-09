@@ -11,6 +11,6 @@ def after_install():
     system_settings.save(ignore_permissions=True)
     
     # Commit the database changes
-    frappe.db.commit()
+    frappe.db.commit() # nosemgrep # Required: after_install() runs outside any request-response cycle during bench install; commit is necessary to persist System Settings changes before the installation process completes
     print("✅ Max File Size increased to 100MB.")
     print("🎉 FrappeRSS Installation Complete!")

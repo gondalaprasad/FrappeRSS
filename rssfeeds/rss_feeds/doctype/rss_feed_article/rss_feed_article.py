@@ -17,7 +17,7 @@ class RSSFeedArticle(Document):
         """Triggered automatically right after the article is saved."""
         settings = frappe.get_single("RSS App Settings")
         if settings.enable_ai_pipeline and self.ai_processing_status == "Pending":
-            frappe.db.commit()
+            frappe.db.commit() # nosemgrep # Required: enqueue_after_commit=True only enqueues the background job after the transaction is committed; without this commit the job is never dispatched
             frappe.enqueue_doc(
                 self.doctype,
                 self.name,
@@ -242,11 +242,15 @@ class RSSFeedArticle(Document):
                 # ----------------------------------------------------
                 # IT IS A FILE (.pdf, .zip, etc.): Download and attach
                 # ----------------------------------------------------
-                filename = (url.split('/')[-1] or "content").split('?')[0]
-                if "." not in filename:
-                    filename += ".bin"
+                filename = os.path.basename((url.split('/')[-1] or "content").split('?')[0])  # strip any directory components
+                if not filename or "." not in filename:
+                    filename = "attachment.bin"
 
                 file_path = os.path.join(temp_dir, filename)
+
+                # Guard: ensure resolved path stays inside temp_dir
+                if not os.path.realpath(file_path).startswith(os.path.realpath(temp_dir)):
+                    raise Exception("Unsafe file path detected in URL filename.")
 
                 with open(file_path, 'wb') as f:
                     f.write(content)
@@ -263,7 +267,7 @@ class RSSFeedArticle(Document):
 
                 # UPDATE DOC
                 self.db_set("file_attachment", saved_file.file_url)
-                frappe.db.commit()
+                frappe.db.commit() # nosemgrep # Required: this runs inside a background worker outside the request cycle; commit persists the attachment before self.reload() reads it back
                 self.reload()
 
                 # ZIP HANDLING
@@ -288,6 +292,12 @@ class RSSFeedArticle(Document):
                     if not filename.lower().endswith(".pdf"): continue
                     with zip_ref.open(member) as source:
                         target_path = os.path.join(extract_dir, filename)
+                        
+                        # Guard: zip entries can contain ../../ traversal sequences
+                        if not os.path.realpath(target_path).startswith(os.path.realpath(extract_dir)):
+                            frappe.log_error("ZIP Traversal Blocked", f"Skipped unsafe entry: {member}")
+                            continue
+
                         with open(target_path, "wb") as target:
                             shutil.copyfileobj(source, target)
                     with open(target_path, 'rb') as f:
@@ -303,7 +313,7 @@ class RSSFeedArticle(Document):
                         break
                 if not primary_pdf: primary_pdf = extracted_pdfs[0]
                 self.db_set("file_attachment", primary_pdf.file_url)
-            frappe.db.commit()
+            frappe.db.commit() # nosemgrep # Required: background job context; commits extracted zip PDFs and primary file selection so they are visible to the AI pipeline in the next step
         finally:
             shutil.rmtree(extract_dir, ignore_errors=True)
 
@@ -348,6 +358,12 @@ class RSSFeedArticle(Document):
     def _extract_text_from_file(self, file_path):
         text = ""
         try:
+            # Guard: path must be inside the Frappe site directory
+            site_path = os.path.realpath(frappe.get_site_path())
+            if not os.path.realpath(file_path).startswith(site_path):
+                frappe.log_error("File Traversal Blocked", f"Rejected path outside site: {file_path}")
+                return ""
+
             if file_path.lower().endswith(".pdf"):
                 import fitz
                 with fitz.open(file_path) as pdf:
@@ -372,7 +388,7 @@ class RSSFeedArticle(Document):
         if not settings.enable_ai_pipeline or self.ai_processing_status in ["Completed", "Summarizing"]: return
 
         self.db_set("ai_processing_status", "Summarizing")
-        frappe.db.commit()
+        frappe.db.commit() 
 
         try:
             self._handle_attachments()
@@ -422,7 +438,7 @@ class RSSFeedArticle(Document):
                     timeout=60
                 )
                 self.db_set({"ai_summary": markdown(response.choices[0].message.content), "ai_processing_status": "Completed"})
-                frappe.db.commit()
+                frappe.db.commit() # nosemgrep # Required: background job context; commits the completed AI summary before reload and webhook notification to prevent data loss if notification fails
                 self.reload()
                 self.send_google_chat_notification()
                 return
@@ -439,7 +455,7 @@ class RSSFeedArticle(Document):
         else:
             self.db_set({"ai_processing_status": "Pending", "ai_summary": f"[RETRY] Attempt 1 failed: {error_message}"})
             frappe.enqueue_doc(self.doctype, self.name, "generate_ai_summary", queue="long", timeout=1500)
-        frappe.db.commit()
+        frappe.db.commit() # nosemgrep # Required: background job context; commits failure/retry status so the retry job sees a clean state when it picks up the document
 
     def send_google_chat_notification(self):
         """Restored Alert Logic with verified fields from console."""

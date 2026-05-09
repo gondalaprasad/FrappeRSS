@@ -1,0 +1,65 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"ZXqwzZCVMN\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Settings</span>\",\"col\":12}},{\"id\":\"GPmmBFed2F\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Enable / Disable AI Flow\",\"col\":3}},{\"id\":\"V4h23Wn2xe\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Google Webhook\",\"col\":3}},{\"id\":\"V3RvzDx9hK\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"RSS Feed Source\",\"col\":3}},{\"id\":\"XJlyCVniWp\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"AI Model Config\",\"col\":3}}]",
+ "creation": "2026-05-02 19:20:12.454697",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "",
+ "idx": 0,
+ "indicator_color": "",
+ "is_hidden": 0,
+ "label": "Settings",
+ "links": [],
+ "modified": "2026-05-07 15:41:03.947624",
+ "modified_by": "Administrator",
+ "module": "RSS Feeds",
+ "name": "Settings",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "FrappeRSS",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "RSS Admin"
+  }
+ ],
+ "sequence_id": 2.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Enable / Disable AI Flow",
+   "link_to": "RSS App Settings",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Google Webhook",
+   "link_to": "Google Chat Webhook",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "RSS Feed Source",
+   "link_to": "RSS Feed Source",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "AI Model Config",
+   "link_to": "AI Provider Profile",
+   "stats_filter": "[]",
+   "type": "DocType"
+  }
+ ],
+ "title": "Settings"
+}
