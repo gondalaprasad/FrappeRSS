@@ -252,11 +252,11 @@ class RSSFeedArticle(Document):
                 if not os.path.realpath(file_path).startswith(os.path.realpath(temp_dir)):
                     raise Exception("Unsafe file path detected in URL filename.")
 
-                with open(file_path, 'wb') as f:
+                with open(file_path, 'wb') as f: # nosemgrep # Path sanitized with os.path.basename and validated with realpath against temp_dir above
                     f.write(content)
 
                 # SAVE FILE TO FRAPPE
-                with open(file_path, 'rb') as f:
+                with open(file_path, 'rb') as f: # nosemgrep # Path sanitized with os.path.basename and validated with realpath against temp_dir above
                     saved_file = save_file(
                         fname=filename,
                         content=f.read(),
@@ -298,9 +298,9 @@ class RSSFeedArticle(Document):
                             frappe.log_error("ZIP Traversal Blocked", f"Skipped unsafe entry: {member}")
                             continue
 
-                        with open(target_path, "wb") as target:
+                        with open(target_path, "wb") as target: # nosemgrep # Path validated with realpath against extract_dir to prevent zip traversal above
                             shutil.copyfileobj(source, target)
-                    with open(target_path, 'rb') as f:
+                    with open(target_path, 'rb') as f: # nosemgrep # Path validated with realpath against extract_dir to prevent zip traversal above
                         saved_file = save_file(fname=filename, content=f.read(), dt=self.doctype, dn=self.name, is_private=1)
                         extracted_pdfs.append(saved_file)
 
@@ -366,7 +366,7 @@ class RSSFeedArticle(Document):
 
             if file_path.lower().endswith(".pdf"):
                 import fitz
-                with fitz.open(file_path) as pdf:
+                with fitz.open(file_path) as pdf: # nosemgrep # Path validated with realpath against frappe.get_site_path() above
                     for page in pdf: text += page.get_text() + "\n"
             elif file_path.lower().endswith((".png", ".jpg", ".jpeg")):
                 from PIL import Image
