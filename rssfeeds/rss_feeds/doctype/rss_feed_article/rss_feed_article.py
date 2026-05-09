@@ -371,9 +371,9 @@ class RSSFeedArticle(Document):
             elif file_path.lower().endswith((".png", ".jpg", ".jpeg")):
                 from PIL import Image
                 import pytesseract
-                text += pytesseract.image_to_string(Image.open(file_path)) + "\n"
+                text += pytesseract.image_to_string(Image.open(file_path)) + "\n" # nosemgrep # Path validated with realpath against frappe.get_site_path() above
             elif file_path.lower().endswith(".txt"):
-                with open(file_path, "r", encoding="utf-8", errors="ignore") as f: text = f.read()
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f: text = f.read() # nosemgrep # Path validated with realpath against frappe.get_site_path() above
         except: pass
         return text
 
