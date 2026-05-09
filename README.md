@@ -1,17 +1,12 @@
 # 📡 FrappeRSS — Enterprise Regulatory Intelligence
 
-<div align="center">
-
 [![GitHub stars](https://img.shields.io/github/stars/gondalaprasad/FrappeRSS?style=social)](https://github.com/gondalaprasad/FrappeRSS/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/gondalaprasad/FrappeRSS?style=social)](https://github.com/gondalaprasad/FrappeRSS/network/members)
 [![GitHub watchers](https://img.shields.io/github/watchers/gondalaprasad/FrappeRSS?style=social)](https://github.com/gondalaprasad/FrappeRSS/watchers)
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Frappe Framework](https://img.shields.io/badge/Frappe-v15+-blue.svg)](https://frappeframework.com/)
 [![Python](https://img.shields.io/badge/Python-3.10+-green.svg)](https://www.python.org/)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-gondalaprasad-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/gondalaprasad/)
-
-</div>
 
 ---
 
@@ -21,18 +16,14 @@
 
 ## 📈 Repository Activity
 
-<div align="center">
-
 [![Star History Chart](https://api.star-history.com/svg?repos=gondalaprasad/FrappeRSS&type=Date)](https://star-history.com/#gondalaprasad/FrappeRSS&Date)
-
-</div>
 
 ---
 
 ## ✨ Core Functionality & Features
 
 | Feature | Description |
-|---|---|
+| --- | --- |
 | 📥 **Automated RSS Fetching** | Background schedulers pull the latest circulars and news items at your preferred intervals. |
 | 🧠 **AI Executive Summarization** | Passes downloaded document text and OCR data through LiteLLM to generate instant, highly accurate executive summaries. |
 | 🚦 **Smart Webhook Gatekeeper** | Keyword-based Allow/Block lists prevent alert spam in Google Chat. Routine updates are logged silently; critical keywords trigger instant alarms. |
@@ -54,10 +45,9 @@ sudo apt-get install -y tesseract-ocr tesseract-ocr-eng libmupdf-dev
 
 ---
 
-
 ## 💻 Main Commands & Configuration
 
-To ensure optimal performance for heavy background AI processing, we highly recommend adjusting your Frappe configuration:
+To ensure optimal performance for heavy background AI processing, we highly recommend adjusting your Frappe configuration.
 
 **Increase Background Workers:**
 
@@ -76,22 +66,6 @@ bench execute rssfeeds.rss_feeds.doctype.rss_feed_source.rss_feed_source.fetch_a
 
 ---
 
-## 📤 Push to GitHub
-
-After making changes to your documentation:
-
-```bash
-git add README.md
-git commit -m "Docs: Upgraded README with advanced documentation and star graphs"
-git push origin main
-```
-
----
-
-<div align="center">
-
 Built with ❤️ for the **Frappe Community**
 
 [![LinkedIn](https://img.shields.io/badge/Connect%20on%20LinkedIn-gondalaprasad-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/gondalaprasad/)
-
-</div>
