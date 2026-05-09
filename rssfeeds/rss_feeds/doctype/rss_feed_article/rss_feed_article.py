@@ -388,7 +388,7 @@ class RSSFeedArticle(Document):
         if not settings.enable_ai_pipeline or self.ai_processing_status in ["Completed", "Summarizing"]: return
 
         self.db_set("ai_processing_status", "Summarizing")
-        frappe.db.commit() 
+        frappe.db.commit()   # nosemgrep # Required: background job context; commits "Summarizing" status immediately so concurrent scheduler runs see it and skip, preventing duplicate AI processing
 
         try:
             self._handle_attachments()
