@@ -24,6 +24,13 @@ scheduler_events = {
     ]
 }
 
+fixtures = [
+    {
+        "doctype": "Custom Field",
+        "filters": [["dt", "=", "RSS Feed Source"]]
+    }
+]
+
 # Testing
 # -------
 # before_tests = "rssfeeds.install.before_tests"
