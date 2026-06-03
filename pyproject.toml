@@ -16,7 +16,9 @@ dependencies = [
     "pytesseract>=0.3.10",
     "Pillow>=10.0.0",
     # AI Intelligence
-    "litellm>=1.0.0"
+    "litellm>=1.0.0",
+    # Srapper
+    "cloudscraper"
 ]
 
 [tool.bench.frappe-dependencies]
